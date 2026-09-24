@@ -98,9 +98,12 @@
   $("q-next").onclick = function () { state.idx++; save(); renderQuestion(); };
 
   // ---------- Scoring ----------
-  // Cutoffs calibrated on 518 past DYL intakes so a top-3 system lands ~30% Enervation, ~35% Toxemia,
-  // ~22% Irritation, ~13% Inflammation (most people are in the early stages without knowing it).
-  function stageOf(pctile) { return pctile < 70 ? 1 : pctile < 86 ? 2 : pctile < 95 ? 3 : 4; }
+  // Same scale as ScoreApp: each body system and the overall score is Low 0-10%, Medium 11-30%, High 31%+.
+  function tierOf(pct) {
+    var r = Math.round(pct);
+    for (var i = 0; i < C.tiers.length; i++) if (r <= C.tiers[i].to) return C.tiers[i];
+    return C.tiers[C.tiers.length - 1];
+  }
   function percentile(q, pct) {
     var below = 0;
     for (var i = 0; i < q.length; i++) if (q[i] < pct) below++;
@@ -118,17 +121,13 @@
     });
     var systems = D.systems.filter(function (s) { return s.key !== hide; }).map(function (s) {
       var b = bySys[s.key], pct = b.max ? Math.round(b.pts / b.max * 1000) / 10 : 0;
-      var pc = pct > 0 ? percentile(s.q, pct) : 0;
-      return { key: s.key, name: s.name, pct: pct, percentile: pc, stage: pct > 0 ? stageOf(pc) : 0 };
+      return { key: s.key, name: s.name, pct: pct, percentile: pct > 0 ? percentile(s.q, pct) : 0, tier: tierOf(pct).name };
     });
-    var ranked = systems.filter(function (s) { return s.key !== "environmental" && s.pct > 0; })
-      .sort(function (a, b) { return b.percentile - a.percentile || b.pct - a.pct; });
+    // Her top 3: the systems where she stands out most compared with past DYL clients (these get the full explanation).
+    var top = systems.filter(function (s) { return s.key !== "environmental" && s.pct > 0; })
+      .sort(function (a, b) { return b.percentile - a.percentile || b.pct - a.pct; }).slice(0, 3);
     var totalPct = Math.round(total / D.potential * 100);
-    return {
-      totalPct: totalPct,
-      tier: totalPct <= 10 ? "Low" : totalPct <= 30 ? "Medium" : "High",
-      systems: systems, top: ranked.slice(0, 3), watch: ranked.slice(3, 6), answers: answers
-    };
+    return { totalPct: totalPct, tier: tierOf(totalPct).name, systems: systems, top: top, answers: answers };
   }
 
   // ---------- Finish ----------
@@ -136,40 +135,36 @@
     show("s-working");
     var r = score();
     send({
-      event: "finished", lead: state.lead, totalPct: r.totalPct, tier: r.tier,
-      systems: r.systems, top: r.top.map(function (s) { return s.name + " (" + C.stages[s.stage].name + ")"; }),
-      watch: r.watch.map(function (s) { return s.name + " (" + C.stages[s.stage].name + ")"; }),
+      event: "finished", lead: state.lead, totalPct: r.totalPct, tier: r.tier, systems: r.systems,
+      top: r.top.map(function (s) { return s.name + " (" + s.pct + "%, " + s.tier + ")"; }),
       answers: r.answers
     });
     clear();
     setTimeout(function () { renderResults(r); show("s-results"); }, 1400);
   }
 
-  function meter(stage) {
-    var h = "<div class='meter'>";
-    for (var i = 1; i <= 4; i++) h += "<i class='" + (i <= stage ? "on s" + stage : "") + "'></i>";
-    return h + "</div>";
-  }
   function renderResults(r) {
-    var name = state.lead && state.lead.firstName ? esc(state.lead.firstName) + ", your" : "Your";
-    var h = "<h1>" + C.headline.replace(/^Your/, name) + "</h1><div class='intro card'>";
-    C.opening.forEach(function (p) { h += "<p>" + p + "</p>"; });
-    h += "</div>";
-    if (r.top.length) {
-      h += "<h3 class='section'>" + C.topHeading + "</h3>";
-      r.top.forEach(function (s) {
-        var st = C.stages[s.stage], cp = C.systems[s.key];
-        h += "<div class='card sys'><div class='top'><h3>" + s.name + "</h3><span class='chip s" + s.stage + "'>" + st.name + "</span></div>" +
-          meter(s.stage) + "<p class='stage-line'>" + st.line + "</p><p class='what'>" + cp.what + "</p><p class='saying'>" + cp.saying + "</p></div>";
-      });
-    }
-    if (r.watch.length) {
-      h += "<h3 class='section'>" + C.watchHeading + "</h3><div class='watch'>";
-      r.watch.forEach(function (s) { h += "<div><span>" + s.name + "</span><span class='chip s" + s.stage + "'>" + C.stages[s.stage].name + "</span></div>"; });
+    var t = tierOf(r.totalPct), topKeys = r.top.map(function (s) { return s.key; });
+    var first = state.lead && state.lead.firstName ? ", " + esc(state.lead.firstName) : "";
+    var h = "<h1>" + C.title + first + "</h1><p class='subtitle'>" + C.subtitle + "</p>";
+    h += "<div class='card overall'><p class='label'>" + C.overallHeading + "</p><p class='big " + t.cls + "'>" + r.totalPct + "%</p>" +
+      "<div class='gauge'><i class='" + t.cls + "' style='width:" + Math.max(3, r.totalPct) + "%'></i></div><p class='tier " + t.cls + "'>" + t.name + "</p>" +
+      "<div class='legend'>" + C.tiers.map(function (x) { return "<span><i class='" + x.cls + "'></i>" + x.name + "</span>"; }).join("") + "</div></div>";
+    h += "<div class='card foundation'><p>" + C.foundation + "</p></div>";
+    h += "<div class='card offer'><h3>" + C.offerTitle + "</h3>";
+    C.offer.forEach(function (p) { h += "<p>" + p + "</p>"; });
+    h += "<a class='btn' href='" + C.consultUrl + "' target='_blank' rel='noopener'>" + C.consultButton + "</a></div>";
+    h += "<h3 class='section'>" + C.systemsHeading + "</h3>";
+    var ordered = r.systems.slice().sort(function (a, b) { return b.pct - a.pct; });
+    ordered.forEach(function (s) {
+      var st = tierOf(s.pct), cp = C.systems[s.key], isTop = topKeys.indexOf(s.key) >= 0;
+      h += "<div class='card sys" + (isTop ? " top3" : "") + "'><div class='top'><h3>" + s.name + "</h3>" +
+        "<div class='score'><span class='pct " + st.cls + "'>" + Math.round(s.pct) + "%</span><span class='chip " + st.cls + "'>" + st.name + "</span></div></div>" +
+        "<div class='gauge'><i class='" + st.cls + "' style='width:" + Math.max(3, s.pct) + "%'></i></div>";
+      if (isTop && cp) h += "<p class='what'>" + cp.what + "</p><p class='saying'>" + cp.saying + "</p>";
       h += "</div>";
-    }
-    h += "<p class='verdict'>" + C.verdict + "</p><div class='consult card'><p>" + C.consult + "</p>" +
-      "<a class='btn' href='" + C.consultUrl + "' target='_blank' rel='noopener'>" + C.consultButton + "</a></div>";
+    });
+    h += "<div class='consult'><a class='btn' href='" + C.consultUrl + "' target='_blank' rel='noopener'>" + C.consultButton + "</a></div>";
     $("s-results").innerHTML = h;
   }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); }

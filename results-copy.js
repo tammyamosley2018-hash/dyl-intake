@@ -1,24 +1,24 @@
 // Results page wording (DYL Terrain Model). Edit words here; scoring lives in intake-data.js.
 window.COPY = {
   consultUrl: "https://calendly.com/quillaxiberry/45-minute-health-assessment-free-dyl",
-  headline: "Your body has been talking. Here's what it's saying.",
-  opening: [
-    "Most people never notice the first stage. Long before anything shows up on a lab, the nerve energy of a gland or organ starts to wane. We call it <strong>enervation</strong>. Nothing hurts yet. You're just tired in a way rest doesn't fix.",
-    "Your answers show where your body is quietly running low, and where it has started asking for help."
+  // Mirrors Tammy's ScoreApp result page (her wording), upgraded with per-system explanations.
+  title: "Thank you for taking the Health Intake",
+  subtitle: "Quilla will go over your results below on your call.",
+  overallHeading: "Your overall score",
+  foundation: "All tissue failures and chronic health issues have a foundation which starts with a stagnant and toxic lymphatic system. Because of environment and diet, the body goes through the 4 stages of health degeneration: Acute, Sub Acute, Chronic and Degeneration/Tissue Destruction and Breakdown as the last stage. When one repairs the body, it will go from Chronic, to Sub Acute, to Acute and then to Full Cellular Regeneration. Those are the steps to health as you detoxify and eat your way back to health.",
+  offerTitle: "An offer just for you",
+  offer: [
+    "<strong>Congratulations!</strong> Your results are below… But here's the truth: a score is just a number without context. That's why I want to personally walk you through your results in a free 45-minute Body Assessment Call.",
+    "<strong>You'll learn more about what's REALLY happening in your body in this 45-minute call than you have in the last 30 years of doctor visits.</strong>",
+    "This is your opportunity to finally understand the ROOT CAUSE of your symptoms, discover why your body is responding this way, and get a clear roadmap for reversing your health challenges. You'll receive valuable, actionable insights whether you work with us or not. Most clients tell us this is the first time a healthcare provider has actually taken the time to explain what's going on in a way that makes sense."
   ],
-  topHeading: "Where your body is asking for attention",
-  watchHeading: "Also worth watching",
-  verdict: "These are <em>signals</em>, not verdicts. Your body is not broken. It's responding intelligently to what it has been carrying.",
-  consult: "Your results are a starting point. In your free 45-minute consult, we'll walk through what each signal means for <em>your</em> body, and what your terrain needs first.",
-  consultButton: "Book my free consult",
-
-  // Client-facing stages 1-4 of the seven-stage Terrain Model. Stages 5-7 are assessed in the consult only.
-  stages: [
-    null,
-    { name: "Enervation", line: "The energy in this system is starting to wane. It's subtle, and it's the easiest stage to turn around." },
-    { name: "Toxemia", line: "Waste is building here faster than your body can clear it. The signals are getting louder." },
-    { name: "Irritation", line: "This system is being irritated by what it's carrying, and your body is starting to push back." },
-    { name: "Inflammation", line: "Your body is actively fighting to clear this system. The heat you feel is effort, not failure." }
+  consultButton: "Yes, I want to know my root cause",
+  systemsHeading: "Your body systems",
+  // Same Low / Medium / High scale as ScoreApp, applied to the overall score and to each body system.
+  tiers: [
+    { name: "Low", from: 0, to: 10, cls: "t1" },
+    { name: "Medium", from: 11, to: 30, cls: "t2" },
+    { name: "High", from: 31, to: 100, cls: "t3" }
   ],
 
   systems: {
@@ -40,7 +40,7 @@ window.COPY = {
     },
     female: {
       what: "Your cycle is a monthly report card on your whole terrain, not just your reproductive organs.",
-      saying: "Irregular cycles, heavy bleeding, sore breasts, changes in sex drive. Your cycle is carrying a message about what your body is holding."
+      saying: "Cramps, heavy bleeding, and irregular cycles are signs the womb is being used as a backup exit for cellular waste. As the body cleans up during a deep detox, periods typically shorten to a pain-free, pantyliner-light few days, because the womb is no longer needed to carry that load."
     },
     male: {
       what: "Reflects circulation, hormonal strength, and how well your lower body is draining.",

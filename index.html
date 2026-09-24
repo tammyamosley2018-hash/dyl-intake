@@ -103,29 +103,35 @@
   .working { text-align: center; padding: 60px 0; }
   .working p { font-family: "Fraunces", Georgia, serif; font-style: italic; font-size: 1.2rem; }
 
-  /* Results */
-  .results h1 { font-size: 1.9rem; text-align: center; line-height: 1.15; }
-  .results .intro { margin: 14px 0 22px; }
-  .results .intro p { margin: 0 0 10px; }
-  .results .intro strong { color: var(--lime); }
-  .results h3.section { font-size: 1.15rem; font-style: italic; font-weight: 500; color: var(--gold); text-align: center; margin: 26px 0 12px; }
-  .sys { margin-bottom: 12px; }
-  .sys .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .sys h3 { font-size: 1.25rem; }
-  .chip { flex: none; font-size: .75rem; font-weight: 700; letter-spacing: .04em; padding: 3px 10px; border-radius: 99px; color: #1e2b12; }
-  .chip.s1 { background: var(--s1); } .chip.s2 { background: var(--s2); } .chip.s3 { background: var(--s3); } .chip.s4 { background: var(--s4); color: #fff; }
-  .meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 10px; }
-  .meter i { height: 6px; border-radius: 99px; background: rgba(255,255,255,.15); }
-  .meter i.on.s1 { background: var(--s1); } .meter i.on.s2 { background: var(--s2); } .meter i.on.s3 { background: var(--s3); } .meter i.on.s4 { background: var(--s4); }
-  .sys .stage-line { font-weight: 500; margin: 0 0 8px; }
-  .sys .what { font-size: .92rem; color: var(--soft); margin: 0 0 6px; }
+  /* Results: same Low / Medium / High colors as ScoreApp (brightened slightly for the dark background) */
+  .t1 { --tc: #6cc93a; } .t2 { --tc: #d4c23a; } .t3 { --tc: #ff4d5e; }
+  .results h1 { font-size: 1.8rem; text-align: center; line-height: 1.2; }
+  .results .subtitle { text-align: center; color: var(--soft); margin: 8px 0 20px; }
+  .results .card { margin-bottom: 14px; }
+  .overall { text-align: center; }
+  .overall .label { margin: 0; font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+  .overall .big { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 4rem; line-height: 1.1; margin: 4px 0 8px; color: var(--tc); }
+  .overall .tier { font-family: "Fraunces", Georgia, serif; font-size: 1.6rem; margin: 8px 0 12px; color: var(--tc); }
+  .gauge { height: 8px; border-radius: 99px; background: rgba(255,255,255,.15); overflow: hidden; }
+  .gauge i { display: block; height: 100%; border-radius: 99px; background: var(--tc); }
+  .legend { display: flex; justify-content: center; gap: 18px; font-size: .9rem; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend i { width: 12px; height: 12px; border-radius: 50%; background: var(--tc); }
+  .foundation p { margin: 0; line-height: 1.6; }
+  .offer h3 { font-size: 1.3rem; font-style: italic; font-weight: 500; color: var(--gold); margin-bottom: 10px; }
+  .offer p { margin: 0 0 12px; line-height: 1.6; }
+  .offer .btn, .consult .btn { text-transform: uppercase; letter-spacing: .04em; font-size: .95rem; }
+  .results h3.section { font-size: 1.2rem; font-style: italic; font-weight: 500; color: var(--gold); text-align: center; margin: 26px 0 12px; }
+  .sys .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .sys h3 { font-size: 1.15rem; }
+  .sys .score { display: flex; align-items: center; gap: 8px; flex: none; }
+  .sys .pct { font-family: "Fraunces", Georgia, serif; font-size: 1.4rem; font-weight: 600; color: var(--tc); }
+  .chip { font-size: .75rem; font-weight: 700; letter-spacing: .04em; padding: 3px 10px; border-radius: 99px; color: #fff; background: var(--tc); }
+  .chip.t2 { color: #2b2605; }
+  .sys.top3 { border-color: var(--lime); box-shadow: 0 0 0 1px rgba(166,214,90,.4); }
+  .sys .what { font-size: .92rem; color: var(--soft); margin: 12px 0 6px; }
   .sys .saying { font-size: .95rem; margin: 0; }
-  .watch { display: grid; gap: 8px; }
-  .watch div { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 14px; background: var(--glass); border: 1px solid var(--glass-line); }
-  .verdict { text-align: center; font-family: "Fraunces", Georgia, serif; font-size: 1.15rem; margin: 26px 0 8px; }
-  .verdict em { color: var(--lime); }
-  .consult { margin-top: 18px; text-align: center; }
-  .consult p { margin: 0 0 14px; }
+  .consult { margin-top: 20px; }
   footer { margin-top: 30px; text-align: center; font-size: .76rem; color: var(--soft); }
 </style>
 </head>
@@ -213,8 +219,8 @@
   <footer>© <span id="yr">2026</span> DYL Method · DYLMethod.com<br>Educational content only — not a substitute for medical advice.</footer>
 </div>
 
-<script src="intake-data.js?v=1"></script>
-<script src="results-copy.js?v=1"></script>
-<script src="intake.js?v=1"></script>
+<script src="intake-data.js?v=2"></script>
+<script src="results-copy.js?v=2"></script>
+<script src="intake.js?v=2"></script>
 </body>
 </html>
