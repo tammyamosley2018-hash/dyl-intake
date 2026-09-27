@@ -132,6 +132,12 @@
   .sys .what { font-size: .92rem; color: var(--soft); margin: 12px 0 6px; }
   .sys .saying { font-size: .95rem; margin: 0; }
   .consult { margin-top: 20px; }
+  @media print {
+    body { background: #fff; color: #1f2a2c; } .sky, .brand, footer, .consult, .offer .btn { display: none !important; }
+    .card { background: #fff; border: 1px solid #ccc; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; break-inside: avoid; }
+    .results .subtitle, .sys .what, .overall .label { color: #555; } .gauge { background: #eee; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
   footer { margin-top: 30px; text-align: center; font-size: .76rem; color: var(--soft); }
 </style>
 </head>
@@ -219,8 +225,8 @@
   <footer>© <span id="yr">2026</span> DYL Method · DYLMethod.com<br>Educational content only — not a substitute for medical advice.</footer>
 </div>
 
-<script src="intake-data.js?v=2"></script>
-<script src="results-copy.js?v=2"></script>
-<script src="intake.js?v=2"></script>
+<script src="intake-data.js?v=3"></script>
+<script src="results-copy.js?v=3"></script>
+<script src="intake.js?v=3"></script>
 </body>
 </html>

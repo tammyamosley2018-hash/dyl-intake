@@ -41,6 +41,13 @@
     return out;
   }
 
+  // ---------- Report link opened from the email ----------
+  var reportCode = new URLSearchParams(location.search).get("report");
+  if (reportCode) {
+    var rep = fromReport(reportCode);
+    if (rep) { renderResults(rep.r, { first: rep.first, fromLink: true }); show("s-results"); }
+  }
+
   // ---------- Welcome ----------
   if (state.lead && Object.keys(state.answers).length) $("resume").hidden = false;
   $("start").onclick = function () { state = fresh(); save(); show("s-form"); };
@@ -130,11 +137,29 @@
     return { totalPct: totalPct, tier: tierOf(totalPct).name, systems: systems, top: top, answers: answers };
   }
 
+  // ---------- Report link (first name + scores only; no answers or health details) ----------
+  function reportLink(r) {
+    var data = { f: (state.lead && state.lead.firstName) || "", t: r.totalPct, top: r.top.map(function (s) { return s.key; }), s: {} };
+    r.systems.forEach(function (s) { data.s[s.key] = s.pct; });
+    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    return location.origin + location.pathname + "?report=" + b64;
+  }
+  function fromReport(code) {
+    try {
+      var d = JSON.parse(decodeURIComponent(escape(atob(code.replace(/-/g, "+").replace(/_/g, "/")))));
+      var systems = D.systems.filter(function (s) { return d.s.hasOwnProperty(s.key); }).map(function (s) {
+        return { key: s.key, name: s.name, pct: d.s[s.key], tier: tierOf(d.s[s.key]).name };
+      });
+      return { first: d.f, r: { totalPct: d.t, tier: tierOf(d.t).name, systems: systems,
+        top: systems.filter(function (s) { return d.top.indexOf(s.key) >= 0; }) } };
+    } catch (e) { return null; }
+  }
+
   // ---------- Finish ----------
   function finish() {
     show("s-working");
     var r = score();
-    send({
+    send({ reportLink: reportLink(r),
       event: "finished", lead: state.lead, totalPct: r.totalPct, tier: r.tier, systems: r.systems,
       top: r.top.map(function (s) { return s.name + " (" + s.pct + "%, " + s.tier + ")"; }),
       answers: r.answers
@@ -143,10 +168,12 @@
     setTimeout(function () { renderResults(r); show("s-results"); }, 1400);
   }
 
-  function renderResults(r) {
+  function renderResults(r, opts) {
+    opts = opts || {};
     var t = tierOf(r.totalPct), topKeys = r.top.map(function (s) { return s.key; });
-    var first = state.lead && state.lead.firstName ? ", " + esc(state.lead.firstName) : "";
-    var h = "<h1>" + C.title + first + "</h1><p class='subtitle'>" + C.subtitle + "</p>";
+    var name = opts.first !== undefined ? opts.first : (state.lead && state.lead.firstName) || "";
+    var sub = opts.fromLink ? C.subtitle : C.emailedSubtitle.replace("{email}", esc((state.lead && state.lead.email) || "your inbox"));
+    var h = "<h1>" + C.title + (name ? ", " + esc(name) : "") + "</h1><p class='subtitle'>" + sub + "</p>";
     h += "<div class='card overall'><p class='label'>" + C.overallHeading + "</p><p class='big " + t.cls + "'>" + r.totalPct + "%</p>" +
       "<div class='gauge'><i class='" + t.cls + "' style='width:" + Math.max(3, r.totalPct) + "%'></i></div><p class='tier " + t.cls + "'>" + t.name + "</p>" +
       "<div class='legend'>" + C.tiers.map(function (x) { return "<span><i class='" + x.cls + "'></i>" + x.name + "</span>"; }).join("") + "</div></div>";
@@ -164,12 +191,13 @@
       if (isTop && cp) h += "<p class='what'>" + cp.what + "</p><p class='saying'>" + cp.saying + "</p>";
       h += "</div>";
     });
-    h += "<div class='consult'><a class='btn' href='" + C.consultUrl + "' target='_blank' rel='noopener'>" + C.consultButton + "</a></div>";
+    h += "<div class='consult'><a class='btn' href='" + C.consultUrl + "' target='_blank' rel='noopener'>" + C.consultButton + "</a>" +
+      "<button class='btn ghost' onclick='window.print()'>Save as PDF / Print</button></div>";
     $("s-results").innerHTML = h;
   }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); }
 
-  window.__intakeTest = { score: score, setState: function (s) { state = s; } };  // used by data/test_scoring.js
+  window.__intakeTest = { score: score, reportLink: reportLink, fromReport: fromReport, setState: function (s) { state = s; } };  // used by data/test_scoring.js
 
   // ---------- Hand-off to n8n ----------
   function send(payload, tries) {

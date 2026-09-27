@@ -4,6 +4,7 @@ window.COPY = {
   // Mirrors Tammy's ScoreApp result page (her wording), upgraded with per-system explanations.
   title: "Thank you for taking the Health Intake",
   subtitle: "Quilla will go over your results below on your call.",
+  emailedSubtitle: "Your full report has been emailed to {email}. Quilla will go over your results below on your call.",
   overallHeading: "Your overall score",
   foundation: "All tissue failures and chronic health issues have a foundation which starts with a stagnant and toxic lymphatic system. Because of environment and diet, the body goes through the 4 stages of health degeneration: Acute, Sub Acute, Chronic and Degeneration/Tissue Destruction and Breakdown as the last stage. When one repairs the body, it will go from Chronic, to Sub Acute, to Acute and then to Full Cellular Regeneration. Those are the steps to health as you detoxify and eat your way back to health.",
   offerTitle: "An offer just for you",
