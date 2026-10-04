@@ -19,6 +19,33 @@
   }
   $("yr").textContent = new Date().getFullYear();
 
+  // ---------- Where they came from (pathway map, ads, GHL emails) ----------
+  // Kept separately from the answers so it survives finishing the intake.
+  var TRACK_KEY = "dyl-intake-track", TRACK_FIELDS = ["cid", "utm_source", "utm_medium", "utm_campaign", "utm_content", "fbclid"];
+  var track = (function () {
+    var saved = {}, q = new URLSearchParams(location.search), fresh = {};
+    try { saved = JSON.parse(localStorage.getItem(TRACK_KEY)) || {}; } catch (e) {}
+    TRACK_FIELDS.forEach(function (k) { if (q.get(k)) fresh[k] = q.get(k); });
+    var merged = Object.keys(fresh).length ? fresh : saved;  // a new visit's tags win over old ones
+    try { localStorage.setItem(TRACK_KEY, JSON.stringify(merged)); } catch (e) {}
+    return merged;
+  })();
+
+  // Calendly link with their name/email pre-filled and the tracking tags carried through.
+  // Calendly only keeps utm_* fields, so the GHL contact id rides in utm_term.
+  function consultLink() {
+    var lead = state.lead || {}, q = new URLSearchParams();
+    var full = [lead.firstName, lead.lastName].filter(Boolean).join(" ");
+    if (full) q.set("name", full);
+    if (lead.email) q.set("email", lead.email);
+    q.set("utm_source", track.utm_source || "intake");
+    q.set("utm_medium", track.utm_medium || "results-page");
+    if (track.utm_campaign) q.set("utm_campaign", track.utm_campaign);
+    if (track.utm_content) q.set("utm_content", track.utm_content);
+    if (track.cid) q.set("utm_term", "cid-" + track.cid);
+    return C.consultUrl + "?" + q.toString();
+  }
+
   // ---------- Which questions this person sees ----------
   function hiddenSystem() {
     var g = state.lead && state.lead.gender;
@@ -69,7 +96,7 @@
     $("form-error").hidden = ok;
     if (!ok) return;
     state.lead = lead; state.idx = 0; save();
-    send({ event: "started", lead: lead });
+    send({ event: "started", lead: lead, track: track });
     renderQuestion(); show("s-quiz");
   });
 
@@ -160,7 +187,7 @@
     show("s-working");
     var r = score();
     send({ reportLink: reportLink(r),
-      event: "finished", lead: state.lead, totalPct: r.totalPct, tier: r.tier, systems: r.systems,
+      event: "finished", lead: state.lead, track: track, totalPct: r.totalPct, tier: r.tier, systems: r.systems,
       top: r.top.map(function (s) { return s.name + " (" + s.pct + "%, " + s.tier + ")"; }),
       answers: r.answers
     });
@@ -170,6 +197,7 @@
 
   function renderResults(r, opts) {
     opts = opts || {};
+    var book = esc(consultLink());
     var t = tierOf(r.totalPct), topKeys = r.top.map(function (s) { return s.key; });
     var name = opts.first !== undefined ? opts.first : (state.lead && state.lead.firstName) || "";
     var sub = opts.fromLink ? C.subtitle : C.emailedSubtitle.replace("{email}", esc((state.lead && state.lead.email) || "your inbox"));
@@ -180,7 +208,7 @@
     h += "<div class='card foundation'><p>" + C.foundation + "</p></div>";
     h += "<div class='card offer'><h3>" + C.offerTitle + "</h3>";
     C.offer.forEach(function (p) { h += "<p>" + p + "</p>"; });
-    h += "<a class='btn' href='" + C.consultUrl + "' target='_blank' rel='noopener'>" + C.consultButton + "</a></div>";
+    h += "<a class='btn' href='" + book + "' target='_blank' rel='noopener'>" + C.consultButton + "</a></div>";
     h += "<h3 class='section'>" + C.systemsHeading + "</h3>";
     var ordered = r.systems.slice().sort(function (a, b) { return b.pct - a.pct; });
     ordered.forEach(function (s) {
@@ -191,7 +219,7 @@
       if (isTop && cp) h += "<p class='what'>" + cp.what + "</p><p class='saying'>" + cp.saying + "</p>";
       h += "</div>";
     });
-    h += "<div class='consult'><a class='btn' href='" + C.consultUrl + "' target='_blank' rel='noopener'>" + C.consultButton + "</a>" +
+    h += "<div class='consult'><a class='btn' href='" + book + "' target='_blank' rel='noopener'>" + C.consultButton + "</a>" +
       "<button class='btn ghost' onclick='window.print()'>Save as PDF / Print</button></div>";
     $("s-results").innerHTML = h;
   }
